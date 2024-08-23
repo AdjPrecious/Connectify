@@ -6,6 +6,7 @@ using Connectify.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog;
@@ -26,6 +27,10 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(p => { p.Password.RequireDigit = true; p.Password.RequireUppercase = true; p.Password.RequireLowercase = false; p.Password.RequireNonAlphanumeric = false; p.Password.RequiredLength = 8; })
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
+
+
+var jwtSetings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = Environment.GetEnvironmentVariable("SECRET");
 builder.Services.AddAuthentication(opt =>
 {
     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme; opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -37,9 +42,9 @@ builder.Services.AddAuthentication(opt =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = "http://localhost:5059",
-        ValidAudience = "http://localhost:5059",
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("superSecretKey@345"))
+        ValidIssuer = jwtSetings["validIssuer"],
+        ValidAudience = jwtSetings["validAudience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
     };
 });
 // Add services to the container.

@@ -16,7 +16,7 @@ namespace Connectify.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegisterUser(UserForRegistrationDto userForRegistration)
+        public async Task<IActionResult> RegisterUser([FromBody] UserForRegistrationDto userForRegistration)
         {
             var result = await _service.AuthenticationService.RegisterUser(userForRegistration);
             if(!result.Succeeded)
@@ -29,6 +29,15 @@ namespace Connectify.Controllers
             }
 
             return StatusCode(201);
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(UserForAuthentication user)
+        {
+            if (!await _service.AuthenticationService.ValidateUser(user))
+            return  Unauthorized();
+
+            return Ok(new { Token =  _service.AuthenticationService.CreateToken() });
         }
     }
 }
