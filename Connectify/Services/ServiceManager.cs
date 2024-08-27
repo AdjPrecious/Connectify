@@ -9,9 +9,9 @@ namespace Connectify.Services
        
         private readonly Lazy<IAuthenticationService> _authenticationService;
 
-        public ServiceManager( IMapper mapper, UserManager<IdentityUser> userManager, ILoggerManager logger, IConfiguration configuration)
+        public ServiceManager( IMapper mapper, UserManager<IdentityUser> userManager, ILoggerManager logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
-                _authenticationService = new Lazy<IAuthenticationService>(() => new AuthenticationService(mapper, userManager, logger, configuration));
+                _authenticationService = new Lazy<IAuthenticationService>(() => new AuthenticationService(mapper, userManager, logger, configuration, httpContextAccessor));
         }
 
         public IAuthenticationService AuthenticationService => _authenticationService.Value;

@@ -17,6 +17,7 @@ LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nl
 
 builder.Services.AddAuthentication();
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<ILoggerManager, LoggerManager>();
 builder.Services.AddScoped<IServiceManager, ServiceManager>();
 builder.Services.AddDbContextPool<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("sqlConnection")));
@@ -27,6 +28,8 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(p => { p.Password.RequireDigit = true; p.Password.RequireUppercase = true; p.Password.RequireLowercase = false; p.Password.RequireNonAlphanumeric = false; p.Password.RequiredLength = 8; })
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
+
+builder.Services.Configure<DataProtectionTokenProviderOptions>(opts => opts.TokenLifespan = TimeSpan.FromHours(2));
 
 
 var jwtSetings = builder.Configuration.GetSection("JwtSettings");

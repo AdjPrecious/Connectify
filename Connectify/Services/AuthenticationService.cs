@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Connectify.DataTransferObject;
+using Connectify.Exceptions;
 using Connectify.Logger;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -9,21 +10,23 @@ using System.Text;
 
 namespace Connectify.Services
 {
-    public class AuthenticationService : IAuthenticationService 
+    public class AuthenticationService : IAuthenticationService
     {
         private readonly IMapper _mapper;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ILoggerManager _logger;
         private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private IdentityUser? _identityUser;
        
 
-        public AuthenticationService(IMapper mapper, UserManager<IdentityUser> userManager, ILoggerManager logger, IConfiguration configuration)
+        public AuthenticationService(IMapper mapper, UserManager<IdentityUser> userManager, ILoggerManager logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _mapper = mapper;
             _userManager = userManager;
             _logger = logger;
             _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public string CreateToken()
@@ -60,6 +63,9 @@ namespace Connectify.Services
                 _logger.LogWarn($"{nameof(ValidateUser)}: Authentication failed. Wrong user name or password. ");
             return result;
         }
+
+
+
 
         private SigningCredentials GetSigningCredentials()
         {
@@ -99,6 +105,59 @@ namespace Connectify.Services
                 
         }
 
+       
+        public async Task<string> ForgotPassword(string emailOrUserName)
+        {
+           var token =await ResetToken(emailOrUserName);
 
+            return token;
+                
+            
+        }
+
+        private async Task<string> ResetToken(string emailOrUserName)
+        {
+            _identityUser = await _userManager.FindByEmailAsync(emailOrUserName);
+
+           if (_identityUser == null)
+                _identityUser = await _userManager.FindByNameAsync(emailOrUserName);
+
+            if(_identityUser is null) 
+                throw  new UserNotFoundException(emailOrUserName);
+
+             var token = await _userManager.GeneratePasswordResetTokenAsync(_identityUser);
+
+                return token;
+
+        }
+
+        public async Task<IdentityResult> ResetPassword(PasswordResetDto passwordResetDto)
+        {
+            _identityUser = await _userManager.FindByEmailAsync(passwordResetDto.EmailORUserName);
+
+            if (_identityUser is null)
+                _identityUser = await _userManager.FindByNameAsync(passwordResetDto.EmailORUserName);
+
+            if (_identityUser is null)
+                throw new UserNotFoundException(passwordResetDto.EmailORUserName);
+
+
+            var resetPassword = await _userManager.ResetPasswordAsync(_identityUser, passwordResetDto.Token, passwordResetDto.NewPassword);
+
+                return resetPassword;
+            
+        }
+
+        public async Task<IdentityResult> ChangePassword(ChangePasswordDto changePasswordDto)
+        {
+            var username = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
+
+            _identityUser = await _userManager.FindByEmailAsync(username);
+
+            var result = await _userManager.ChangePasswordAsync(_identityUser, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+
+            return result;
+            
+        }
     }
 }
