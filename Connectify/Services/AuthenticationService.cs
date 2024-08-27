@@ -29,7 +29,7 @@ namespace Connectify.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public string CreateToken()
+        public async Task<string> CreateToken()
         {
             var signingCredentials = GetSigningCredentials();
             var claims =  GetClaimsByUserName();
@@ -73,7 +73,7 @@ namespace Connectify.Services
 
             var secret = new SymmetricSecurityKey(key);
 
-            return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
+            return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256Signature);
         }
 
         private List<Claim> GetClaimsByUserName()
@@ -91,7 +91,7 @@ namespace Connectify.Services
 
         private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
         {
-            var jwtSettings = _configuration.GetSection("JwtSetting");
+            var jwtSettings = _configuration.GetSection("JwtSettings");
 
             var tokenOptions = new JwtSecurityToken(
                 issuer: jwtSettings["validIssuer"],
@@ -151,8 +151,10 @@ namespace Connectify.Services
         public async Task<IdentityResult> ChangePassword(ChangePasswordDto changePasswordDto)
         {
             var username = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
+            
 
-            _identityUser = await _userManager.FindByEmailAsync(username);
+
+            _identityUser = await _userManager.FindByNameAsync(username);
 
             var result = await _userManager.ChangePasswordAsync(_identityUser, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
 

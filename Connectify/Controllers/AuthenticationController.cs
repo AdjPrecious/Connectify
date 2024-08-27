@@ -1,22 +1,28 @@
 ﻿using Connectify.DataTransferObject;
+using Connectify.Model.Identity;
 using Connectify.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Connectify.Controllers
 {
     [Route("api/authentication")]
     [ApiController]
+    [ApiExplorerSettings(GroupName = "v1")]
     public class AuthenticationController : ControllerBase
     {
         private readonly IServiceManager _service;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public AuthenticationController(IServiceManager service)
+        public AuthenticationController(IServiceManager service, UserManager<IdentityUser> userManager)
         {
             _service = service;
+            _userManager = userManager;
         }
 
-        [HttpPost]
+        [HttpPost("createUser")]
         public async Task<IActionResult> RegisterUser([FromBody] UserForRegistrationDto userForRegistration)
         {
             var result = await _service.AuthenticationService.RegisterUser(userForRegistration);
@@ -76,6 +82,7 @@ namespace Connectify.Controllers
         [HttpPost("changepassword")]
         public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
         {
+           
             var result = await _service.AuthenticationService.ChangePassword(changePasswordDto);
             if (!result.Succeeded)
             {

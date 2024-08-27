@@ -8,7 +8,7 @@ namespace Connectify.Services
         Task<IdentityResult> RegisterUser(UserForRegistrationDto userForRegistrationDto);
 
         Task<bool> ValidateUser(UserForAuthentication userForAuth);
-        String CreateToken();
+        Task<String> CreateToken();
 
         Task<string> ForgotPassword(string emailOrUserName);
 
