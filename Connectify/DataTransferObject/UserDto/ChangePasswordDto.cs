@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Connectify.DataTransferObject
+namespace Connectify.DataTransferObject.UserDto
 {
     public record ChangePasswordDto
     {
@@ -18,6 +18,6 @@ namespace Connectify.DataTransferObject
         [Compare("NewPassword")]
         public string? ConfirmNewPassword { get; set; }
 
-    
+
     }
 }

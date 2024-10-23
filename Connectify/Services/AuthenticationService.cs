@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Connectify.DataTransferObject;
+using Connectify.DataTransferObject.UserDto;
 using Connectify.Exceptions;
 using Connectify.Logger;
 using Microsoft.AspNetCore.Identity;
@@ -52,10 +53,12 @@ namespace Connectify.Services
 
         public async Task<bool> ValidateUser(UserForAuthentication userForAuth)
         {
-            _identityUser = await _userManager.FindByNameAsync(userForAuth.UserName);
+           
 
-            if (_identityUser == null)
-                _identityUser = await _userManager.FindByEmailAsync(userForAuth.UserName);
+          
+               _identityUser = await _userManager.FindByEmailAsync(userForAuth.email);
+
+            
 
             var result = (_identityUser != null && await _userManager.CheckPasswordAsync(_identityUser, userForAuth.Password));
 
@@ -80,7 +83,7 @@ namespace Connectify.Services
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, _identityUser.UserName)
+                new Claim(ClaimTypes.Name, _identityUser.Email)
             };
            
 
@@ -150,11 +153,11 @@ namespace Connectify.Services
 
         public async Task<IdentityResult> ChangePassword(ChangePasswordDto changePasswordDto)
         {
-            var username = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
+            var email = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
             
 
 
-            _identityUser = await _userManager.FindByNameAsync(username);
+            _identityUser = await _userManager.FindByEmailAsync(email);
 
             var result = await _userManager.ChangePasswordAsync(_identityUser, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
 

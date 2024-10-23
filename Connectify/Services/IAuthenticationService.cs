@@ -1,4 +1,5 @@
 ﻿using Connectify.DataTransferObject;
+using Connectify.DataTransferObject.UserDto;
 using Microsoft.AspNetCore.Identity;
 
 namespace Connectify.Services
