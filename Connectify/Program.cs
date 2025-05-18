@@ -16,11 +16,13 @@ var builder = WebApplication.CreateBuilder(args);
 LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"));
 
 builder.Services.AddAuthentication();
+
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<ILoggerManager, LoggerManager>();
 builder.Services.AddScoped<IServiceManager, ServiceManager>();
 builder.Services.AddDbContextPool<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("sqlConnection")));
+
 
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(p => { p.Password.RequireDigit = true; p.Password.RequireUppercase = true; p.Password.RequireLowercase = false; p.Password.RequireNonAlphanumeric = false; p.Password.RequiredLength = 8; })
